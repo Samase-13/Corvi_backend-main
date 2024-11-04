@@ -39,3 +39,30 @@ class DisponibilidadCalendario(db.Model):
 
     def __repr__(self):
         return f'<Disponibilidad {self.id_disponibilidad} para Maquinaria {self.id_maquinaria}>'
+
+class Factura(db.Model):
+    __tablename__ = 'facturas'
+    id_factura = db.Column(db.Integer, primary_key=True)
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)  # Asumiendo que tienes una tabla de usuarios
+    id_maquinaria = db.Column(db.Integer, db.ForeignKey('maquinaria.id_maquinaria'), nullable=False)  # Si la factura está asociada a una maquinaria
+    fecha_emision = db.Column(db.DateTime, nullable=False)  # Fecha de emisión de la factura
+    monto_total = db.Column(db.Float, nullable=False)  # Monto total de la factura
+    archivo_pdf = db.Column(db.String(200), nullable=False)  # Ruta del archivo PDF almacenado
+    estado = db.Column(db.Enum('pagada', 'pendiente', 'cancelada', name='estado_factura'), nullable=False, default='pendiente')
+
+    # Relación inversa si es necesario
+    usuario = db.relationship('Usuario', backref='facturas', lazy=True)  # Asegúrate de tener un modelo Usuario
+
+    def __repr__(self):
+        return f'<Factura {self.id_factura}, Usuario {self.id_usuario}, Monto {self.monto_total}>'
+
+class Usuario(db.Model):
+    __tablename__ = 'usuarios'
+    id_usuario = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    correo = db.Column(db.String(100), unique=True, nullable=False)
+    dni = db.Column(db.String(8), unique=True, nullable=False)  # Suponiendo que el DNI tiene 8 dígitos
+    # Puedes añadir otros campos que consideres necesarios
+
+    def __repr__(self):
+        return f'<Usuario {self.nombre}, DNI {self.dni}>'
