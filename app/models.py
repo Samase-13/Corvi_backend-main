@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime
 
 class Repuestos(db.Model):
     __tablename__ = 'repuestos'
@@ -9,6 +10,9 @@ class Repuestos(db.Model):
     disponibilidad = db.Column(db.String(50), nullable=False)
     voltaje = db.Column(db.Numeric(10, 2), nullable=False)
     imagen = db.Column(db.String(200), nullable=True)
+    
+    def __repr__(self):
+        return f'<Repuestos {self.nombre}>'
 
 class Maquinaria(db.Model):
     __tablename__ = 'maquinaria'
@@ -66,3 +70,19 @@ class Usuario(db.Model):
 
     def __repr__(self):
         return f'<Usuario {self.nombre}, DNI {self.dni}>'
+
+class Pedido(db.Model):
+    __tablename__ = 'pedidos'
+    id_pedido = db.Column(db.Integer, primary_key=True)
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_repuesto = db.Column(db.Integer, db.ForeignKey('repuestos.id_repuestos'), nullable=False)
+    cantidad = db.Column(db.Integer, nullable=False)
+    direccion_envio = db.Column(db.String(200), nullable=False)
+    metodo_envio = db.Column(db.String(50), nullable=False)
+    costo_envio = db.Column(db.Float, nullable=False)
+    estado = db.Column(db.Enum('pendiente', 'enviado', 'cancelado', name='estado_pedido'), nullable=False, default='pendiente')
+    monto_total = db.Column(db.Float, nullable=False)  # Asegúrate de incluir este campo
+    fecha_creacion = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Campo para fecha de creación
+
+    def __repr__(self):
+        return f'<Pedido {self.id_pedido}, Usuario {self.id_usuario}, Monto {self.monto_total}>'
