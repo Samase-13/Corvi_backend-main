@@ -1,34 +1,29 @@
-from flask import Blueprint, request, jsonify
-from app.services.pedidos_service import PedidoService
+from flask import Blueprint, jsonify, request
+from app.models import Pedido, Usuario, Repuestos
+from app.extensions import db
+from app.utils.token_required import token_required
+from datetime import datetime
+import json
 
-bp = Blueprint('pedidos', __name__)
+pedidos_bp = Blueprint('pedidos', __name__, url_prefix='/pedidos')
 
-@bp.route('/pedidos', methods=['POST'])
-def crear_pedido_route():
-    data = request.get_json()
-    try:
-        nuevo_pedido_id = PedidoService.crear_pedido(data)
-        return jsonify({"id_pedido": nuevo_pedido_id}), 201
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+@pedidos_bp.route('/usuario/<int:id_usuario>', methods=['GET'])
+@token_required
+def get_pedidos_usuario(id_usuario):
+    """Obtener los pedidos de un usuario por su ID."""
+    pedidos = Pedido.query.filter_by(id_usuario=id_usuario).all()
+    if not pedidos:
+        return jsonify({'error': 'No se encontraron pedidos para este usuario'}), 404
 
-@bp.route('/pedidos/<int:id_pedido>', methods=['GET'])
-def obtener_pedido_route(id_pedido):
-    try:
-        pedido = PedidoService.obtener_pedido(id_pedido)
-        return jsonify(pedido), 200  # Asegúrate de serializar el pedido correctamente
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
+    output = []
+    for pedido in pedidos:
+        productos = json.loads(pedido.productos)
+        output.append({
+            'id_pedido': pedido.id_pedido,
+            'codigo_rastreo': pedido.codigo_rastreo,
+            'productos': productos,
+            'total': pedido.total,
+            'fecha_creacion': pedido.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')
+        })
 
-@bp.route('/pedidos', methods=['GET'])
-def listar_pedidos_route():
-    pedidos = PedidoService.listar_pedidos()
-    return jsonify(pedidos), 200  # Asegúrate de serializar la lista de pedidos
-
-@bp.route('/pedidos/<int:id_pedido>', methods=['DELETE'])
-def eliminar_pedido_route(id_pedido):
-    try:
-        PedidoService.eliminar_pedido(id_pedido)
-        return jsonify({"message": "Pedido eliminado"}), 204
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
+    return jsonify(output), 200

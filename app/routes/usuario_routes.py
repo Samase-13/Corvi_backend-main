@@ -43,3 +43,22 @@ def listar_usuarios():
         }
         for usuario in usuarios
     ])
+    
+@usuario_bp.route('/usuarios/<int:id_usuario>/pedidos', methods=['GET'])
+def obtener_pedidos(id_usuario):
+    usuario = Usuario.query.get(id_usuario)
+    if not usuario:
+        return jsonify({'message': 'Usuario no encontrado'}), 404
+
+    pedidos = Pedido.query.filter_by(id_usuario=id_usuario).all()
+    pedidos_data = [
+        {
+            'id_pedido': pedido.id_pedido,
+            'codigo_rastreo': pedido.codigo_rastreo,
+            'productos': json.loads(pedido.productos),
+            'total': pedido.total,
+            'fecha_creacion': pedido.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        for pedido in pedidos
+    ]
+    return jsonify(pedidos_data), 200

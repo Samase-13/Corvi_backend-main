@@ -3,7 +3,7 @@ from functools import wraps
 from flask import request, jsonify
 
 # Define el access token que la API espera para autenticación
-ACCESS_TOKEN = "APP_USR-7085813680131461-111301-f242d511c1ba522b72195af5369aa2d1-2090063386"
+ACCESS_TOKEN = "APP_USR-7085813680131461-111712-5bd3fd261dd3c6af3726ab4942c71f44-2090063386"
 
 def token_required(f):
     @wraps(f)

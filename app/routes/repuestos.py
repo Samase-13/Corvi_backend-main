@@ -72,7 +72,7 @@ def add_repuesto():
 
 # Leer todos los repuestos (GET)
 @bp.route('/', methods=['GET'])
-@token_required
+
 def get_repuestos():
     repuestos = Repuestos.query.all()
     output = [
@@ -91,7 +91,7 @@ def get_repuestos():
 
 # Leer un repuesto por ID (GET)
 @bp.route('/<int:id>', methods=['GET'])
-@token_required
+
 def get_repuesto(id):
     repuesto = Repuestos.query.get_or_404(id)
     return jsonify({

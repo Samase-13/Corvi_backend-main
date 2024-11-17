@@ -70,19 +70,40 @@ class Usuario(db.Model):
 
     def __repr__(self):
         return f'<Usuario {self.nombre}, DNI {self.dni}>'
+class Envio(db.Model):
+    __tablename__ = 'envios'
+    id_envio = db.Column(db.Integer, primary_key=True)
+    codigo_rastreo = db.Column(db.String(100), unique=True, nullable=False)
+    estado = db.Column(db.String(50), nullable=False, default='En preparación')
+    destino = db.Column(db.String(255), nullable=False)
+    fecha_envio = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Envio {self.codigo_rastreo}>'
+
+class HistorialEnvio(db.Model):
+    __tablename__ = 'historial_envios'
+    id_historial = db.Column(db.Integer, primary_key=True)
+    id_envio = db.Column(db.Integer, db.ForeignKey('envios.id_envio'), nullable=False)
+    estado = db.Column(db.String(50), nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    observaciones = db.Column(db.Text, nullable=True)
+
+    envio = db.relationship('Envio', backref='historial')
+
+    def __repr__(self):
+        return f'<Historial {self.id_historial} - Estado: {self.estado}>'
 
 class Pedido(db.Model):
     __tablename__ = 'pedidos'
     id_pedido = db.Column(db.Integer, primary_key=True)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-    id_repuesto = db.Column(db.Integer, db.ForeignKey('repuestos.id_repuestos'), nullable=False)
-    cantidad = db.Column(db.Integer, nullable=False)
-    direccion_envio = db.Column(db.String(200), nullable=False)
-    metodo_envio = db.Column(db.String(50), nullable=False)
-    costo_envio = db.Column(db.Float, nullable=False)
-    estado = db.Column(db.Enum('pendiente', 'enviado', 'cancelado', name='estado_pedido'), nullable=False, default='pendiente')
-    monto_total = db.Column(db.Float, nullable=False)  # Asegúrate de incluir este campo
-    fecha_creacion = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Campo para fecha de creación
+    codigo_rastreo = db.Column(db.String(50), nullable=False, unique=True)
+    productos = db.Column(db.Text, nullable=False)  # Se guardarán como JSON
+    total = db.Column(db.Float, nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+
+    usuario = db.relationship('Usuario', backref='pedidos', lazy=True)
 
     def __repr__(self):
-        return f'<Pedido {self.id_pedido}, Usuario {self.id_usuario}, Monto {self.monto_total}>'
+        return f'<Pedido {self.id_pedido}, Usuario {self.id_usuario}, Total {self.total}>'
