@@ -18,10 +18,22 @@ def get_pedidos_usuario(id_usuario):
     output = []
     for pedido in pedidos:
         productos = json.loads(pedido.productos)
+
+        # Agregar detalles adicionales de los productos desde la base de datos
+        productos_con_detalles = []
+        for producto in productos:
+            repuesto = Repuestos.query.filter_by(nombre=producto["title"]).first()
+            productos_con_detalles.append({
+                'title': producto["title"],
+                'quantity': producto["quantity"],
+                'unit_price': producto["unit_price"],
+                'imagen': repuesto.imagen if repuesto else None  # Agregar la URL de la imagen
+            })
+
         output.append({
             'id_pedido': pedido.id_pedido,
             'codigo_rastreo': pedido.codigo_rastreo,
-            'productos': productos,
+            'productos': productos_con_detalles,
             'total': pedido.total,
             'fecha_creacion': pedido.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')
         })
